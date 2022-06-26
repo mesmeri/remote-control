@@ -3,8 +3,9 @@ import { httpServer } from "./src/http_server/index.js";
 import robot from "robotjs";
 import { WebSocketServer } from "ws";
 
-import drawCircle from "./src/draw_utils/draw_circle.js";
-import drawRect from "./src/draw_utils/draw_rect.js";
+import drawCircle from "./src/utils/draw_circle.js";
+import drawRect from "./src/utils/draw_rect.js";
+import moveMouse from "./src/utils/move-mouse.js";
 
 const HTTP_PORT = 3000;
 
@@ -16,6 +17,18 @@ const wss = new WebSocketServer({ port: 8080 });
 wss.on("connection", (wss) => {
   wss.on("message", (message) => {
     const command = message.toString();
+
+    if (command.startsWith("mouse_")) {
+      if (command === "mouse_position") {
+        const mousePos = robot.getMousePos();
+
+        wss.send(`mouse_position ${mousePos.x},${mousePos.y}`);
+      } else {
+        const [direction, distance] = command.split(" ");
+
+        moveMouse(direction, Number(distance));
+      }
+    }
 
     if (command.startsWith("draw_circle")) {
       const radius = command.split(" ")[1];
@@ -35,5 +48,7 @@ wss.on("connection", (wss) => {
 
       drawRect(width, height);
     }
+
+    wss.send(JSON.stringify(command) + "\0");
   });
 });
