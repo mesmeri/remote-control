@@ -4,6 +4,7 @@ import robot from "robotjs";
 import { WebSocketServer } from "ws";
 
 import drawCircle from "./src/draw_utils/draw_circle.js";
+import drawRect from "./src/draw_utils/draw_rect.js";
 
 const HTTP_PORT = 3000;
 
@@ -21,7 +22,18 @@ wss.on("connection", (wss) => {
 
       drawCircle(radius);
     }
-  });
 
-  wss.send("connection response");
+    if (command.startsWith("draw_square")) {
+      const width = Number(command.split(" ")[1]);
+
+      drawRect(width, width);
+    }
+
+    if (command.startsWith("draw_rectangle")) {
+      const width = Number(command.split(" ")[1]);
+      const height = Number(command.split(" ")[2]);
+
+      drawRect(width, height);
+    }
+  });
 });
